@@ -1,0 +1,21 @@
+<div class="min-w-[300px] create-list-container">
+  <div class="bg-white p-4 rounded-lg shadow-md w-80">
+    <form hx-post="{% url 'create-list' %}"
+          hx-target="closest .create-list-container"
+          hx-swap="outerHTML"
+          class="create-list-form">
+        {% csrf_token %}
+        <input type="text"
+               name="name"
+               placeholder="List name"
+               required
+               class="w-full px-3 py-2 border rounded mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <div class="flex justify-end">
+            <button type="submit"
+                    class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                Add List
+            </button>
+        </div>
+    </form>
+  </div>
+</div>

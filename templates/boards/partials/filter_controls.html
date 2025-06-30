@@ -1,0 +1,85 @@
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
+
+    <!-- Filter Buttons -->
+    <div class="flex flex-wrap items-center gap-3">
+        <span class="text-sm font-semibold text-gray-600">Filter:</span>
+
+        {% comment %} Filter Buttons {% endcomment %}
+        <a hx-get="?filter=all{% if search_query %}&search={{ search_query }}{% endif %}"
+           hx-target="#board-container"
+           hx-push-url="true"
+           class="px-4 py-1.5 rounded-full text-sm font-medium shadow-sm transition-all cursor-pointer
+                  {% if filter_type == 'all' %}
+                      bg-indigo-100 text-indigo-800 ring-2 ring-indigo-300
+                  {% else %}
+                      bg-white hover:bg-gray-100 text-gray-600 border border-gray-300
+                  {% endif %}">
+            All
+        </a>
+
+        <a hx-get="?filter=active"
+           hx-target="#board-container"
+           hx-push-url="true"
+           class="px-4 py-1.5 rounded-full text-sm font-medium shadow-sm transition-all cursor-pointer
+                  {% if filter_type == 'active' %}
+                      bg-green-100 text-green-800 ring-2 ring-green-300
+                  {% else %}
+                      bg-white hover:bg-gray-100 text-gray-600 border border-gray-300
+                  {% endif %}">
+            Active
+        </a>
+
+        <a hx-get="?filter=completed"
+           hx-target="#board-container"
+           hx-push-url="true"
+           class="px-4 py-1.5 rounded-full text-sm font-medium shadow-sm transition-all cursor-pointer
+                  {% if filter_type == 'completed' %}
+                      bg-purple-100 text-purple-800 ring-2 ring-purple-300
+                  {% else %}
+                      bg-white hover:bg-gray-100 text-gray-600 border border-gray-300
+                  {% endif %}">
+            Completed
+        </a>
+
+        <a hx-get="?filter=overdue"
+           hx-target="#board-container"
+           hx-push-url="true"
+           class="px-4 py-1.5 rounded-full text-sm font-medium shadow-sm transition-all cursor-pointer
+                  {% if filter_type == 'overdue' %}
+                      bg-red-100 text-red-800 ring-2 ring-red-300
+                  {% else %}
+                      bg-white hover:bg-gray-100 text-gray-600 border border-gray-300
+                  {% endif %}">
+            Overdue
+        </a>
+    </div>
+
+    <!-- Search Input -->
+    <div class="relative w-full md:w-72">
+        <form hx-get="."
+              hx-target="#board-container"
+              hx-trigger="keyup changed delay:500ms, submit"
+              class="relative">
+            <input type="text"
+                   name="search"
+                   value="{{ search_query }}"
+                   placeholder="Search tasks..."
+                   class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 shadow-sm
+                          focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                          text-sm text-gray-700 placeholder:text-gray-400 bg-white">
+
+            <!-- Icon -->
+            <button type="submit" class="absolute left-3 top-2.5 text-gray-400 hover:text-indigo-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </button>
+
+            <!-- Preserve filter -->
+            <input type="hidden" name="filter" value="{{ filter_type }}">
+        </form>
+    </div>
+
+</div>

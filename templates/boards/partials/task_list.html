@@ -1,0 +1,5 @@
+<div id="list-{{ list_id }}-tasks">
+    {% for task in tasks %}
+        {% include 'boards/partials/task_card.html' with task=task %}
+    {% endfor %}
+</div>

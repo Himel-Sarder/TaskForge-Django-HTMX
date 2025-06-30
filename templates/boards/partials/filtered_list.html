@@ -1,0 +1,66 @@
+<div id="board-container" class="space-y-6 cursor-pointer">
+  {% include 'boards/partials/filter_controls.html' with filter_type=filter_type search_query=search_query %}
+
+  {% if search_query %}
+  <div class="mb-4 text-sm text-gray-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-lg">
+    Showing results for: <span class="font-semibold text-indigo-800">"{{ search_query }}"</span>
+    <a hx-get="?filter={{ filter_type }}"
+       hx-target="#board-container"
+       class="ml-3 text-indigo-600 font-medium hover:underline">Clear search</a>
+  </div>
+  {% endif %}
+
+  <div class="lists-container flex gap-6 overflow-x-auto pb-6 scroll-smooth snap-x snap-mandatory scrollbar-hide">
+    {% for list in lists %}
+      <div id="list-{{ list.id }}"
+           class="bg-gradient-to-br from-white via-slate-50 to-gray-100 border border-gray-200 rounded-3xl shadow-xl p-6 w-80 min-w-[20rem] snap-start transform hover:scale-[1.01] transition duration-200 ease-in-out">
+
+        <h2 class="text-2xl font-bold text-indigo-700 mb-4 flex items-center gap-2">
+          <svg class="w-6 h-6 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2"
+               viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18"/>
+          </svg>
+          {{ list.name }}
+        </h2>
+
+        <div id="list-{{ list.id }}-tasks"
+             data-list-id="{{ list.id }}"
+             class="sortable-task-list space-y-3 min-h-[100px]">
+          {% for task in list.filtered_tasks %}
+            {% include 'boards/partials/task_card.html' with task=task %}
+          {% empty %}
+            <div class="text-center py-6 text-gray-400 cursor-pointer">
+              <svg class="mx-auto w-10 h-10 mb-2 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5"
+                   viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5"/>
+              </svg>
+              <p class="text-sm">
+                {% if search_query %}
+                  No tasks found matching <strong>"{{ search_query }}"</strong>
+                {% else %}
+                  {% if filter_type == 'all' %}No tasks yet{% endif %}
+                  {% if filter_type == 'active' %}No active tasks{% endif %}
+                  {% if filter_type == 'completed' %}No completed tasks{% endif %}
+                  {% if filter_type == 'overdue' %}No overdue tasks{% endif %}
+                {% endif %}
+              </p>
+              {% if search_query %}
+              <a hx-get="?filter={{ filter_type }}"
+                 hx-target="#board-container"
+                 class="mt-2 inline-block text-indigo-600 hover:text-indigo-800 text-sm font-medium cursor-pointer">
+                 Clear search
+              </a>
+
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-gray-200">
+          {% include 'boards/partials/task_form.html' with list_id=list.id %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>

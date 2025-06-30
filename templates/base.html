@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskForge</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/ws.js"></script>
+
+  <!-- SortableJS -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <style>
+    [x-cloak] { display: none !important; }
+    .sortable-chosen { opacity: 0.9; transform: scale(1.03); }
+    .sortable-ghost { opacity: 0.5; background: #e0f2fe; border: 2px dashed #60a5fa; }
+    .task-card { transition: all 0.3s ease-in-out; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out both; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .new-task-form { transition: all 0.2s ease; }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-gray-50 to-gray-100 text-gray-900 min-h-screen flex flex-col font-['Inter']">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="{% url 'home' %}" class="text-2xl font-extrabold text-indigo-600 tracking-wide">TaskForge</a>
+      <div class="flex items-center space-x-4 text-sm">
+        {% if user.is_authenticated %}
+          <span class="text-gray-600">Hi, <span class="font-semibold">{{ user.username }}</span></span>
+          <a href="#"
+             hx-post="{% url 'logout' %}"
+             hx-trigger="click"
+             hx-target="body"
+             class="text-gray-600 hover:text-indigo-600 transition">Logout</a>
+        {% else %}
+          <a href="{% url 'login' %}" class="text-gray-600 hover:text-indigo-600">Login</a>
+          <a href="{% url 'signup' %}" class="text-gray-600 hover:text-indigo-600">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 px-6 py-10 animate-fade-in">
+    <div class="max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+    <!-- Footer -->
+    <footer class="bg-white shadow-inner mt-10">
+      <div class="max-w-7xl mx-auto px-4 py-6 text-center text-sm text-black">
+        <div class="copyright">
+                <p class="mb-1">© Copyright 2025 CarKini. All Rights Reserved.</p>
+                <p class="mb-0">Design & Developed With <span style="color: var(--accent);">❤</span> By <a href="https://www.linkedin.com/in/himel-sarder/">Himel Sarder</a></p>
+            </div>
+      </div>
+    </footer>
+
+
+
+  <!-- JS Section -->
+  <script>
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    document.body.addEventListener('htmx:configRequest', (event) => {
+      const csrfToken = getCookie('csrftoken') || '{{ csrf_token }}';
+      event.detail.headers['X-CSRFToken'] = csrfToken;
+    });
+
+    function initSortable() {
+      document.querySelectorAll('.sortable-task-list').forEach(list => {
+        if (list.dataset.sortableInitialized) return;
+        list.dataset.sortableInitialized = true;
+
+        new Sortable(list, {
+          animation: 200,
+          ghostClass: 'sortable-ghost',
+          chosenClass: 'sortable-chosen',
+          onEnd: function(evt) {
+            const listId = list.dataset.listId;
+            const taskIds = Array.from(list.children)
+              .map(item => item.id?.replace('task-', ''))
+              .filter(id => id);
+
+            htmx.ajax('POST', `/lists/${listId}/reorder-tasks/`, {
+              target: `#list-${listId}-tasks`,
+              swap: 'outerHTML',
+              values: { task_ids: taskIds }
+            });
+          }
+        });
+      });
+
+      const listsContainer = document.querySelector('.lists-container');
+      if (listsContainer && !listsContainer.dataset.sortableInitialized) {
+        listsContainer.dataset.sortableInitialized = true;
+
+        new Sortable(listsContainer, {
+          animation: 200,
+          handle: '.list-handle',
+          ghostClass: 'sortable-ghost',
+          chosenClass: 'sortable-chosen',
+          onEnd: function(evt) {
+            const listIds = Array.from(evt.from.children)
+              .map(item => item.id?.replace('list-', ''))
+              .filter(id => id);
+
+            htmx.ajax('POST', '/lists/reorder/', {
+              values: { list_ids: listIds }
+            });
+          }
+        });
+      }
+    }
+
+    function setupTaskForms() {
+      document.querySelectorAll('.add-task-button').forEach(button => {
+        button.addEventListener('click', () => {
+          const formContainer = button.closest('.task-form-container');
+          button.style.display = 'none';
+          const form = formContainer.querySelector('.new-task-form');
+          form.style.display = 'block';
+          setTimeout(() => form.style.opacity = '1', 10);
+          form.querySelector('input[name="title"]').focus();
+        });
+      });
+
+      document.querySelectorAll('.cancel-task-form').forEach(button => {
+        button.addEventListener('click', () => {
+          const form = button.closest('.new-task-form');
+          form.style.opacity = '0';
+          setTimeout(() => {
+            form.style.display = 'none';
+            const addButton = form.closest('.task-form-container').querySelector('.add-task-button');
+            addButton.style.display = 'block';
+          }, 200);
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initSortable();
+      setupTaskForms();
+
+      document.querySelectorAll('[data-modal-target]').forEach(trigger => {
+        trigger.addEventListener('click', function() {
+          const target = document.querySelector(this.dataset.modalTarget);
+          target.classList.remove('hidden');
+        });
+      });
+
+      document.querySelectorAll('[data-modal-hide]').forEach(closeBtn => {
+        closeBtn.addEventListener('click', function() {
+          this.closest('.modal').classList.add('hidden');
+        });
+      });
+
+      if (!getCookie('csrftoken')) {
+        console.warn('CSRF token not found. Reloading page...');
+        window.location.reload();
+      }
+    });
+
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+      initSortable();
+      setupTaskForms();
+
+      if (evt.detail.requestConfig.path.includes('/create/')) {
+        setTimeout(() => {
+          const container = document.querySelector('.lists-container') || document.getElementById('board-container');
+          if (container) container.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }, 100);
+      }
+
+      if (evt.detail.requestConfig.path === '/lists/create/') {
+        const formContainer = evt.detail.elt.closest('.create-list-container');
+        if (formContainer) formContainer.remove();
+      }
+
+      if (evt.detail.requestConfig.path.includes('/add-task')) {
+        const listId = evt.detail.requestConfig.path.split('/')[2];
+        const emptyState = document.querySelector(`#empty-tasks-${listId}`);
+        if (emptyState) emptyState.remove();
+      }
+    });
+
+    document.body.addEventListener('htmx:afterOnLoad', function(evt) {
+      if (evt.detail.successful && evt.detail.requestConfig.path.includes('/add-task')) {
+        const form = evt.detail.elt.closest('.new-task-form');
+        if (form) {
+          form.style.opacity = '0';
+          setTimeout(() => {
+            form.style.display = 'none';
+            form.reset();
+            const addButton = form.closest('.task-form-container').querySelector('.add-task-button');
+            addButton.style.display = 'block';
+          }, 200);
+        }
+      }
+    });
+
+    document.body.addEventListener('htmx:responseError', function(evt) {
+      console.error('HTMX Error:', evt.detail);
+    });
+
+    document.body.addEventListener('htmx:beforeSwap', function(evt) {
+      if (evt.detail.xhr.status === 404) {
+        evt.detail.shouldSwap = true;
+        evt.detail.target = document.getElementById('board-container');
+      }
+    });
+
+    document.body.addEventListener('htmx:afterRequest', function(evt) {
+      if (evt.detail.requestConfig.path === '{% url "logout" %}') {
+        window.location.href = '{% url "login" %}';
+      }
+    });
+  </script>
+</body>
+</html>

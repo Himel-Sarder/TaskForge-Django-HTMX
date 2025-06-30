@@ -1,0 +1,58 @@
+<div id="task-{{ task.id }}"
+     class="task-card p-5 mb-4 rounded-2xl shadow-lg border-l-4 transition-all duration-300 bg-white border-blue-500 hover:shadow-indigo-100">
+
+  <form hx-post="{% url 'edit-task' task.id %}"
+        hx-target="#task-{{ task.id }}"
+        hx-swap="outerHTML"
+        method="POST"
+        class="space-y-4">
+
+    {% csrf_token %}
+
+    <!-- Title Input -->
+    <input type="text"
+           name="title"
+           value="{{ task.title }}"
+           placeholder="Task title"
+           required
+           class="w-full px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm text-gray-800
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  transition placeholder:text-gray-400 text-sm">
+
+    <!-- Description -->
+    <textarea name="description"
+              placeholder="Task description"
+              rows="4"
+              class="w-full px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm text-gray-700
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                     transition placeholder:text-gray-400 text-sm resize-none">{{ task.description }}</textarea>
+
+    <!-- Due Date -->
+    <div class="flex items-center gap-3">
+      <label for="due_date" class="text-sm font-medium text-gray-500">Due Date:</label>
+      <input type="date"
+             name="due_date"
+             value="{{ task.due_date|date:'Y-m-d' }}"
+             class="px-4 py-2 rounded-lg border border-gray-300 text-sm shadow-sm
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-700">
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-end gap-3 pt-3">
+      <!-- Cancel -->
+      <button type="button"
+              hx-get="{% url 'edit-task' task.id %}"
+              hx-target="#task-{{ task.id }}"
+              hx-swap="outerHTML"
+              class="px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-all">
+        Cancel
+      </button>
+
+      <!-- Save -->
+      <button type="submit"
+              class="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all">
+        Save Changes
+      </button>
+    </div>
+  </form>
+</div>

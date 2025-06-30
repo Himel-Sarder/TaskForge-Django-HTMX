@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="animate-fade-in">
+  <div class="max-w-4xl mx-auto text-center py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+    <div class="glass-effect bg-white/80 backdrop-blur-lg rounded-3xl p-10 shadow-xl border border-white/30">
+      <!-- Icon -->
+      <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-indigo-100 mb-6">
+        <svg class="h-12 w-12 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+        </svg>
+      </div>
+      
+      <!-- Title -->
+      <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl mb-4">
+        <span class="block bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+          No Boards Found
+        </span>
+      </h1>
+      
+      <!-- Description -->
+      <p class="mt-3 text-xl text-gray-600 max-w-md mx-auto">
+        Get started by creating your first board to organize tasks and collaborate with your team.
+      </p>
+
+      <!-- Action Buttons -->
+      <div class="mt-10 flex justify-center gap-4">
+        <button hx-get="{% url 'create-board' %}"
+                hx-target="body"
+                hx-swap="beforeend"
+                class="px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:-translate-y-0.5 hover:shadow-lg">
+            Create First Board
+        </button>
+        
+        <a href="#" 
+           class="px-6 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-all">
+          Learn More
+        </a>
+      </div>
+      
+      <!-- Additional Help -->
+      <div class="mt-8 border-t border-gray-200 pt-8">
+        <p class="text-base text-gray-500">
+          Need help getting started? <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Contact support</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Background elements -->
+<div class="fixed inset-0 -z-50 overflow-hidden pointer-events-none">
+  <div class="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-gradient-to-br from-purple-100/30 to-pink-100/20 blur-3xl animate-float-slow"></div>
+  <div class="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-gradient-to-br from-indigo-100/30 to-blue-100/20 blur-3xl animate-float"></div>
+</div>
+
+<style>
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(2deg); }
+  }
+  
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(1deg); }
+  }
+  
+  .animate-float {
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  .animate-float-slow {
+    animation: float-slow 10s ease-in-out infinite;
+  }
+</style>
+{% endblock %}
